@@ -1,7 +1,7 @@
 # LBreakoutU - Wii U Port
 
 ## Description
-LBreakoutHD is an HD remake of the classic LBreakout2 breakout-style game. This version is a direct port to the Nintendo Wii U using the WUT (Wii U Toolchain) framework.
+LBreakoutU is an HD remake of the classic LBreakout2 breakout-style game. This version is a direct port to the Nintendo Wii U using the WUT (Wii U Toolchain) framework.
 
 It includes native support for the Wii U GamePad, featuring full button controls, analog/D-Pad navigation, and touch screen support—which is especially useful for both gameplay and the integrated Level Editor! Custom levels are fully supported and are saved directly to your SD card.
 
