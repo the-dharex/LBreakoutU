@@ -1,0 +1,37 @@
+# Build directories
+build/
+build_wiiu/
+out/
+content/
+.vs/
+.vscode/
+
+# Build artifacts and compiled binaries
+*.o
+*.a
+*.d
+*.elf
+*.rpx
+*.wuhb
+*.map
+*.exe
+dir_hash_table
+dir_table
+file_hash_table
+file_table
+
+# Autotools generated / temp files
+autom4te.cache/
+config.log
+config.status
+config.h
+stamp-h1
+.deps/
+.libs/
+Makefile
+
+# Misc temporary files
+*~
+*.swp
+temp_extract.txt
+temp_utf8.txt

@@ -1,0 +1,143 @@
+#---------------------------------------------------------------------------------
+# LBreakoutHD Wii U Makefile
+#---------------------------------------------------------------------------------
+.SUFFIXES:
+#---------------------------------------------------------------------------------
+
+ifeq ($(strip $(DEVKITPRO)),)
+$(error "Please set DEVKITPRO in your environment. export DEVKITPRO=<path to>/devkitPro")
+endif
+
+include $(DEVKITPRO)/wut/share/wut_rules
+
+#---------------------------------------------------------------------------------
+# TARGET is the name of the output
+# BUILD is the directory where object files & dependency files will be placed
+# SOURCES is a list of directories containing source code
+# DATA is a list of directories containing data files
+# INCLUDES is a list of directories containing header files
+#---------------------------------------------------------------------------------
+TARGET		:=	lbreakouthd
+BUILD		:=	build_wiiu
+SOURCES		:=	src libgame
+DATA		:=	romfs
+INCLUDES	:=	src libgame
+
+APP_TITLE	:=	LBreakoutHD
+APP_AUTHOR	:=	Michael Speck / Port
+APP_ICON	:=	lbreakouthd48.png
+WUHB_OPTIONS := --content=../content --icon=../lbreakouthd48.png
+APP_VERSION	:=	1.2.3
+
+#---------------------------------------------------------------------------------
+# options for code generation
+#---------------------------------------------------------------------------------
+CFLAGS	:= -g -O2 -Wall $(MACHDEP) $(INCLUDE) \
+		   -DWIIU -D__WIIU__ \
+		   -DDATADIR=\"//vol/content/share/lbreakouthd\" \
+		   -DCONFIGDIR=\"\" \
+		   -DLOCALEDIR=\"//vol/content/share/locale\" \
+		   -DENABLE_NLS=0 \
+		   -DHISCOREDIR=\"\" \
+		   -DCONFIG_DIR_NAME=\"\" \
+		   -DSRC_DIR=\"//vol/content/share/lbreakouthd\" \
+		   -DPACKAGE=\"lbreakouthd\" \
+		   -DPACKAGE_NAME=\"lbreakouthd\" \
+		   -DPACKAGE_VERSION=\"1.2.3\"
+
+CXXFLAGS	:= $(CFLAGS) -std=gnu++11
+
+LDFLAGS	=	-g $(MACHDEP) $(RPXSPECS) -Wl,-Map,$(notdir $*.map) \
+			-Wl,--wrap,SDL_CreateRGBSurface -Wl,--wrap,SDL_CreateRGBSurfaceWithFormat
+
+PKG_CONFIG := $(PORTLIBS_PATH)/wiiu/bin/powerpc-eabi-pkg-config
+LIBS	:= $(shell $(PKG_CONFIG) --libs SDL2_ttf SDL2_mixer SDL2_image)
+
+#---------------------------------------------------------------------------------
+# list of directories containing libraries, this must be the top level containing
+# include and lib
+#---------------------------------------------------------------------------------
+LIBDIRS	:= $(PORTLIBS) $(WUT_ROOT)
+
+#---------------------------------------------------------------------------------
+# no real need to edit anything past this point unless you need to add additional
+# rules for different file extensions
+#---------------------------------------------------------------------------------
+ifneq ($(BUILD),$(notdir $(CURDIR)))
+#---------------------------------------------------------------------------------
+
+export OUTPUT	:=	$(CURDIR)/$(TARGET)
+export TOPDIR	:=	$(CURDIR)
+
+export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
+			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+
+export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+
+CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
+CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
+sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
+SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
+BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
+
+#---------------------------------------------------------------------------------
+# use CXX for linking C++ projects, CC for standard C
+#---------------------------------------------------------------------------------
+ifeq ($(strip $(CPPFILES)),)
+#---------------------------------------------------------------------------------
+	export LD	:=	$(CC)
+#---------------------------------------------------------------------------------
+else
+#---------------------------------------------------------------------------------
+	export LD	:=	$(CXX)
+#---------------------------------------------------------------------------------
+endif
+#---------------------------------------------------------------------------------
+
+export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(sFILES:.s=.o) $(SFILES:.S=.o) $(BINFILES:.bin=.o)
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+			-I$(CURDIR)/$(BUILD)
+
+export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
+
+.PHONY: $(BUILD) clean all
+
+#---------------------------------------------------------------------------------
+all: $(BUILD)
+
+$(BUILD):
+	@[ -d $@ ] || mkdir -p $@
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.wiiu
+
+#---------------------------------------------------------------------------------
+clean:
+	@echo clean ...
+	@rm -fr $(BUILD) $(TARGET).elf $(TARGET).wuhb $(TARGET).rpx $(TARGET).map
+
+#---------------------------------------------------------------------------------
+else
+#---------------------------------------------------------------------------------
+# main targets
+#---------------------------------------------------------------------------------
+
+DEPENDS	:=	$(OFILES:.o=.d)
+
+#---------------------------------------------------------------------------------
+# compile and link flags
+#---------------------------------------------------------------------------------
+
+export CFLAGS	:=	$(CFLAGS) -ffunction-sections -fdata-sections
+export CXXFLAGS	:=	$(CXXFLAGS) -ffunction-sections -fdata-sections
+
+#---------------------------------------------------------------------------------
+$(OUTPUT).wuhb: $(OUTPUT).rpx $(WUHB_DEPS)
+$(OUTPUT).rpx: $(OUTPUT).elf
+
+$(OUTPUT).elf: $(OFILES)
+
+-include $(DEPENDS)
+
+#---------------------------------------------------------------------------------
+endif
+#---------------------------------------------------------------------------------

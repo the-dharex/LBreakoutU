@@ -1,0 +1,25 @@
+improve checks for RANDOM20:
+- not more than 5 narrow 1 brick gaps (vert or hori)
+- allow max 50% bricks on lowest 2 lines
+
+polish editor:
+- support for 4:3 classic layout (bricks/extras not shown right now)
+- properly translate ids to chars to init test level
+- preview of levels
+- undo/redo stacks with snapshot before/after each action
+- translation
+
+menu for gamepad
+warp mouse for absolute position to keep inside playing field
+
+new extras
+- free paddle y movement
+- move level down 1
+- instant death
+- instant warp
+- smaller/bigger balls (?)
+- laser (clears entire row, limited number of shots)
+- net: permanent, bring back one lost ball
+- compatibility with old themes: choose random bonus/malus
+  if not supported or write name in box
+
