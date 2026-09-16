@@ -1,4 +1,4 @@
-# LBreakoutHD - Wii U Port
+# LBreakoutU - Wii U Port
 
 ## Description
 LBreakoutHD is an HD remake of the classic LBreakout2 breakout-style game. This version is a direct port to the Nintendo Wii U using the WUT (Wii U Toolchain) framework.
